@@ -273,9 +273,22 @@ jobs:
     needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     environment: staging
+    env:
+      STAGING_HOST: ${{ secrets.STAGING_HOST }}
     
     steps:
+      - name: Check secrets
+        id: check
+        run: |
+          if [ -z "$STAGING_HOST" ]; then
+            echo "configured=false" >> $GITHUB_OUTPUT
+            echo "⚠️ STAGING_HOST secret not set - skipping deploy"
+          else
+            echo "configured=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Deploy to staging server
+        if: steps.check.outputs.configured == 'true'
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.STAGING_HOST }}
@@ -294,9 +307,22 @@ jobs:
     needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment: production
+    env:
+      PRODUCTION_HOST: ${{ secrets.PRODUCTION_HOST }}
     
     steps:
+      - name: Check secrets
+        id: check
+        run: |
+          if [ -z "$PRODUCTION_HOST" ]; then
+            echo "configured=false" >> $GITHUB_OUTPUT
+            echo "⚠️ PRODUCTION_HOST secret not set - skipping deploy"
+          else
+            echo "configured=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Deploy to production server
+        if: steps.check.outputs.configured == 'true'
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.PRODUCTION_HOST }}
