@@ -1,0 +1,48 @@
+# ATS System Backend Dependencies
+
+# FastAPI & Web
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
+email-validator==2.1.0
+
+# Database
+sqlalchemy==2.0.25
+pymysql==1.1.0
+cryptography==42.0.0
+
+# Redis & Celery
+redis==5.0.1
+celery==5.3.6
+
+# PyTorch CPU-only (MUST be installed before sentence-transformers to avoid CUDA)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.2.0+cpu
+
+# NLP & ML (No API keys needed - CPU optimized)
+spacy==3.7.2
+nltk==3.8.1
+scikit-learn==1.4.0
+sentence-transformers==2.3.1
+
+# PDF/Document parsing
+pdfminer.six==20221105
+python-docx==1.1.0
+pypdf==3.17.4
+pdfplumber==0.10.3
+
+# Configuration
+pydantic-settings==2.1.0
+python-dotenv==1.0.0
+
+# Logging
+loguru==0.7.2
+
+# Utilities
+numpy==1.26.3
+aiofiles==23.2.1
+# Monitoring
+psutil==5.9.8

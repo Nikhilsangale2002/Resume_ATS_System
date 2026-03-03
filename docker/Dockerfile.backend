@@ -1,0 +1,47 @@
+# syntax=docker/dockerfile:1.4
+# Optimized Dockerfile with caching for faster rebuilds
+
+FROM python:3.11-slim AS base
+
+WORKDIR /app
+
+# Install system dependencies (cached layer)
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# ============ Dependencies Stage ============
+FROM base AS dependencies
+
+# Copy only requirements first (better caching)
+COPY requirements.txt .
+
+# Install Python dependencies with pip cache
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install -r requirements.txt
+
+# Download spaCy model (cached separately)
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.7.1/en_core_web_md-3.7.1-py3-none-any.whl
+
+# ============ Final Stage ============
+FROM dependencies AS final
+
+# Copy application code (changes frequently - last layer)
+COPY app/ ./app/
+
+# Create upload directories
+RUN mkdir -p uploads/resumes uploads/reports logs
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Run application
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
